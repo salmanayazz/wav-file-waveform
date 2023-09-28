@@ -1,6 +1,5 @@
 package com.example;
 
-import javafx.application.Platform;
 import javafx.fxml.FXML;
 import javax.sound.sampled.AudioFormat;
 import javax.sound.sampled.AudioInputStream;
@@ -10,11 +9,6 @@ import javafx.scene.chart.XYChart;
 import javafx.stage.FileChooser;
 import javafx.stage.FileChooser.ExtensionFilter;
 import java.io.File;
-import java.nio.ByteBuffer;
-import java.nio.ByteOrder;
-import java.nio.ShortBuffer;
-import java.util.ArrayList;
-import java.util.List;
 
 public class PrimaryController {
     @FXML
@@ -82,12 +76,34 @@ public class PrimaryController {
         XYChart.Series<Number, Number> leftSeries = new XYChart.Series<>();
         XYChart.Series<Number, Number> rightSeries = new XYChart.Series<>();
 
-        for (int i = 0; i < leftChannel.length; i++) {
-            if (i % 1000 == 0) {
-                System.out.println(i + " / " + leftChannel.length);
+        // spawn threads to handle plotting the data
+        Thread leftThread = new Thread(() -> {
+            for (int i = 0; i < leftChannel.length; i++) {
+                if (i % 1000 == 0) {
+                    System.out.println("left: " + i + " / " + leftChannel.length);
+                }
+                leftSeries.getData().add(new XYChart.Data<>(i, leftChannel[i]));
             }
-            leftSeries.getData().add(new XYChart.Data<>(i, leftChannel[i]));
-            rightSeries.getData().add(new XYChart.Data<>(i, rightChannel[i]));
+        });
+
+        Thread rightThread = new Thread(() -> {
+            for (int i = 0; i < rightChannel.length; i++) {
+                if (i % 1000 == 0) {
+                    System.out.println("right: " + i + " / " + rightChannel.length);
+                }
+                rightSeries.getData().add(new XYChart.Data<>(i, rightChannel[i]));
+            }
+        });
+
+        leftThread.start();
+        rightThread.start();
+
+        try {
+            // wait here until both threads have finished
+            leftThread.join();
+            rightThread.join();
+        } catch (InterruptedException e) {
+            e.printStackTrace();
         }
 
         // clear existing data and add the new series to the chart
