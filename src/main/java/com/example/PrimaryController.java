@@ -1,5 +1,6 @@
 package com.example;
 
+import javafx.application.Platform;
 import javafx.fxml.FXML;
 import javax.sound.sampled.AudioFormat;
 import javax.sound.sampled.AudioInputStream;
@@ -69,50 +70,55 @@ public class PrimaryController {
     }
 
     private void plotData(short[] leftChannel, short[] rightChannel) {
-        left_chart.setCreateSymbols(false);
-        right_chart.setCreateSymbols(false);
-        left_chart.setLegendVisible(false);
-        right_chart.setLegendVisible(false);
-        XYChart.Series<Number, Number> leftSeries = new XYChart.Series<>();
-        XYChart.Series<Number, Number> rightSeries = new XYChart.Series<>();
+        new Thread(() -> {
+            left_chart.setCreateSymbols(false);
+            right_chart.setCreateSymbols(false);
+            left_chart.setLegendVisible(false);
+            right_chart.setLegendVisible(false);
+            XYChart.Series<Number, Number> leftSeries = new XYChart.Series<>();
+            XYChart.Series<Number, Number> rightSeries = new XYChart.Series<>();
 
-        // spawn threads to handle plotting the data
-        Thread leftThread = new Thread(() -> {
-            for (int i = 0; i < leftChannel.length; i++) {
-                if (i % 1000 == 0) {
-                    System.out.println("left: " + i + " / " + leftChannel.length);
+            // spawn threads to handle plotting the data
+            Thread leftThread = new Thread(() -> {
+                for (int i = 0; i < leftChannel.length; i++) {
+                    if (i % 1000 == 0) {
+                        System.out.println("left: " + i + " / " + leftChannel.length);
+                    }
+                    leftSeries.getData().add(new XYChart.Data<>(i, leftChannel[i]));
                 }
-                leftSeries.getData().add(new XYChart.Data<>(i, leftChannel[i]));
-            }
-        });
+            });
 
-        Thread rightThread = new Thread(() -> {
-            for (int i = 0; i < rightChannel.length; i++) {
-                if (i % 1000 == 0) {
-                    System.out.println("right: " + i + " / " + rightChannel.length);
+            Thread rightThread = new Thread(() -> {
+                for (int i = 0; i < rightChannel.length; i++) {
+                    if (i % 1000 == 0) {
+                        System.out.println("right: " + i + " / " + rightChannel.length);
+                    }
+                    rightSeries.getData().add(new XYChart.Data<>(i, rightChannel[i]));
                 }
-                rightSeries.getData().add(new XYChart.Data<>(i, rightChannel[i]));
+            });
+
+            leftThread.start();
+            rightThread.start();
+
+            try {
+                // wait here until both threads have finished
+                leftThread.join();
+                rightThread.join();
+            } catch (InterruptedException e) {
+                e.printStackTrace();
             }
-        });
 
-        leftThread.start();
-        rightThread.start();
 
-        try {
-            // wait here until both threads have finished
-            leftThread.join();
-            rightThread.join();
-        } catch (InterruptedException e) {
-            e.printStackTrace();
-        }
-
-        // clear existing data and add the new series to the chart
-        left_chart.getData().clear();
-        right_chart.getData().clear();
-        left_chart.getData().add(leftSeries);
-        right_chart.getData().add(rightSeries);
-        leftSeries.getNode().setStyle("-fx-stroke-width: 1px;");
-        rightSeries.getNode().setStyle("-fx-stroke-width: 1px;");
-        System.out.println("done plotting");
+            Platform.runLater(() -> {
+                // clear existing data and add the new series to the chart
+                left_chart.getData().clear();
+                right_chart.getData().clear();
+                left_chart.getData().add(leftSeries);
+                right_chart.getData().add(rightSeries);
+                leftSeries.getNode().setStyle("-fx-stroke-width: 1px;");
+                rightSeries.getNode().setStyle("-fx-stroke-width: 1px;");
+                System.out.println("done plotting");
+            });
+        }).start();
     }
 }
