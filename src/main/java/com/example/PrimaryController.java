@@ -7,6 +7,7 @@ import javax.sound.sampled.AudioInputStream;
 import javax.sound.sampled.AudioSystem;
 import javafx.scene.chart.LineChart;
 import javafx.scene.chart.XYChart;
+import javafx.scene.text.Text;
 import javafx.stage.FileChooser;
 import javafx.stage.FileChooser.ExtensionFilter;
 import java.io.File;
@@ -18,6 +19,12 @@ public class PrimaryController {
     private LineChart<Number, Number> left_chart;
     @FXML
     private LineChart<Number, Number> right_chart;
+    @FXML
+    private Text total_samples;
+    @FXML
+    private Text sampling_frequency;
+    @FXML
+    private Text file_name;
 
     @FXML
     private void selectFile() {
@@ -33,6 +40,7 @@ public class PrimaryController {
 
         if (file != null) {
             System.out.println("Selected .wav file: " + file.getAbsolutePath());
+            file_name.setText("Selected: " + file.getName());
             parseFile(file);
         } else {
             System.out.println("No file selected.");
@@ -44,6 +52,8 @@ public class PrimaryController {
             AudioInputStream audioInputStream = AudioSystem.getAudioInputStream(file);
             AudioFormat format = audioInputStream.getFormat();
             int channels = format.getChannels();
+
+            sampling_frequency.setText(String.valueOf(format.getSampleRate()) + "hz");
 
             // ensure it's a stereo audio file
             if (channels != 2) {
@@ -72,6 +82,9 @@ public class PrimaryController {
     }
 
     private void plotData(short[] leftChannel, short[] rightChannel) {
+
+        total_samples.setText(String.valueOf(leftChannel.length));
+
         new Thread(() -> {
             left_chart.setCreateSymbols(false);
             right_chart.setCreateSymbols(false);
@@ -125,6 +138,8 @@ public class PrimaryController {
                 leftSeries.getNode().setStyle("-fx-stroke-width: 1px;");
                 rightSeries.getNode().setStyle("-fx-stroke-width: 1px;");
                 System.out.println("done plotting");
+
+
             });
         }).start();
     }

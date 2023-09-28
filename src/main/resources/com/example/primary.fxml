@@ -71,8 +71,9 @@
                   <Font size="14.0" />
                </font>
             </Text>
-            <Text layoutX="1043.0" layoutY="54.0" strokeType="OUTSIDE" strokeWidth="0.0" text="0" textAlignment="CENTER" />
-            <Text layoutX="1043.0" layoutY="151.0" strokeType="OUTSIDE" strokeWidth="0.0" text="0" textAlignment="CENTER" />
+            <Text fx:id="total_samples" layoutX="1043.0" layoutY="54.0" strokeType="OUTSIDE" strokeWidth="0.0" text="0" textAlignment="CENTER" />
+            <Text fx:id="sampling_frequency" layoutX="1043.0" layoutY="151.0" strokeType="OUTSIDE" strokeWidth="0.0" text="0" textAlignment="CENTER" />
+            <Text fx:id="file_name" layoutX="970.0" layoutY="611.0" strokeType="OUTSIDE" strokeWidth="0.0" textAlignment="CENTER" wrappingWidth="158.5848388671875" />
       </children>
     </AnchorPane>
   </children>
