@@ -18,7 +18,7 @@ public class App extends Application {
     @Override
     public void start(Stage stage) throws IOException {
         scene = new Scene(loadFXML("primary"));
-        stage.setTitle(".wav File Graph");
+        stage.setTitle(".wav File Waveform Visualizer");
         stage.setScene(scene);
         stage.show();
     }
