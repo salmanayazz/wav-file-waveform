@@ -10,6 +10,8 @@ import javafx.scene.chart.XYChart;
 import javafx.stage.FileChooser;
 import javafx.stage.FileChooser.ExtensionFilter;
 import java.io.File;
+import java.util.ArrayList;
+import java.util.List;
 
 public class PrimaryController {
     @FXML
@@ -80,21 +82,26 @@ public class PrimaryController {
 
             // spawn threads to handle plotting the data
             Thread leftThread = new Thread(() -> {
+                List<XYChart.Data<Number, Number>> dataPoints = new ArrayList<>();
                 for (int i = 0; i < leftChannel.length; i++) {
                     if (i % 1000 == 0) {
                         System.out.println("left: " + i + " / " + leftChannel.length);
                     }
-                    leftSeries.getData().add(new XYChart.Data<>(i, leftChannel[i]));
+                    dataPoints.add(new XYChart.Data<>(i, leftChannel[i]));
                 }
+                leftSeries.getData().addAll(dataPoints);
             });
 
             Thread rightThread = new Thread(() -> {
+                List<XYChart.Data<Number, Number>> dataPoints = new ArrayList<>();
                 for (int i = 0; i < rightChannel.length; i++) {
                     if (i % 1000 == 0) {
                         System.out.println("right: " + i + " / " + rightChannel.length);
                     }
-                    rightSeries.getData().add(new XYChart.Data<>(i, rightChannel[i]));
+                    dataPoints.add(new XYChart.Data<>(i, rightChannel[i]));
+
                 }
+                rightSeries.getData().addAll(dataPoints);
             });
 
             leftThread.start();
