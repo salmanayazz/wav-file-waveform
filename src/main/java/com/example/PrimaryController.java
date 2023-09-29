@@ -40,7 +40,7 @@ public class PrimaryController {
 
         if (file != null) {
             System.out.println("Selected .wav file: " + file.getAbsolutePath());
-            file_name.setText("Selected: " + file.getName());
+            file_name.setText(file.getName());
             parseFile(file);
         } else {
             System.out.println("No file selected.");
@@ -53,7 +53,7 @@ public class PrimaryController {
             AudioFormat format = audioInputStream.getFormat();
             int channels = format.getChannels();
 
-            sampling_frequency.setText(String.valueOf(format.getSampleRate()) + "hz");
+            sampling_frequency.setText(String.valueOf(format.getSampleRate()) + " Hz");
 
             // ensure it's a stereo audio file
             if (channels != 2) {
@@ -82,9 +82,9 @@ public class PrimaryController {
     }
 
     private void plotData(short[] leftChannel, short[] rightChannel) {
-
         total_samples.setText(String.valueOf(leftChannel.length));
 
+        // create a new thread to not block the main UI thread
         new Thread(() -> {
             left_chart.setCreateSymbols(false);
             right_chart.setCreateSymbols(false);
