@@ -1,0 +1,1 @@
+jpackage --type exe --input target --main-jar wav-file-waveform-1.0-SNAPSHOT-shaded.jar --dest target/jpackage --name wav-file-waveform
