@@ -92,7 +92,7 @@ public class PrimaryController {
     }
 
     private void plotData(int[] leftChannel, int[] rightChannel) {
-        total_samples.setText(String.valueOf(leftChannel.length));
+        total_samples.setText(String.valueOf(leftChannel.length + rightChannel.length));
 
         // create a new thread to not block the main UI thread
         new Thread(() -> {
