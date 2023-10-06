@@ -52,6 +52,8 @@ public class PrimaryController {
             AudioInputStream audioInputStream = AudioSystem.getAudioInputStream(file);
             AudioFormat format = audioInputStream.getFormat();
             int channels = format.getChannels();
+            int sampleSizeInBytes = format.getSampleSizeInBits() / 8;
+            int bytesPerFrame = sampleSizeInBytes * channels;
 
             sampling_frequency.setText(String.valueOf(format.getSampleRate()) + " Hz");
 
@@ -60,19 +62,23 @@ public class PrimaryController {
                 System.out.println("Please input a stereo audio file");
                 return;
             }
-
+            System.out.println("val: " + (int) audioInputStream.getFrameLength() * bytesPerFrame);
+            System.out.println("val2: " + (int) bytesPerFrame);
             // read the audio data into a byte array
-            byte[] audioData = new byte[(int) audioInputStream.getFrameLength() * (format.getSampleSizeInBits() / 8) * channels];
+            byte[] audioData = new byte[(int) audioInputStream.getFrameLength() * bytesPerFrame];
             audioInputStream.read(audioData);
 
             // extract left and right channels
-            short[] leftChannel = new short[audioData.length / 4];
-            short[] rightChannel = new short[audioData.length / 4];
+            int[] leftChannel = new int[audioData.length / bytesPerFrame];
+            int[] rightChannel = new int[audioData.length / bytesPerFrame];
 
-            for (int i = 0; i < audioData.length; i += 4) {
+            for (int i = 0; i < audioData.length; i += bytesPerFrame) {
                 // shift the MSB left to merge it with the LSB
-                leftChannel[i / 4] = (short) (audioData[i] | (audioData[i + 1] << 8));
-                rightChannel[i / 4] = (short) (audioData[i + 2] | (audioData[i + 3] << 8));
+                // while iterating over each byte in the sample
+                for (int j = 0; j < sampleSizeInBytes; j++) {
+                    leftChannel[i / bytesPerFrame] = (leftChannel[i / bytesPerFrame] | (audioData[i + j] << 8 * j));
+                    rightChannel[i / bytesPerFrame] = (rightChannel[i / bytesPerFrame] | (audioData[i + j + sampleSizeInBytes] << 8 * j));
+                }
             }
 
             plotData(leftChannel, rightChannel);
@@ -81,7 +87,7 @@ public class PrimaryController {
         }
     }
 
-    private void plotData(short[] leftChannel, short[] rightChannel) {
+    private void plotData(int[] leftChannel, int[] rightChannel) {
         total_samples.setText(String.valueOf(leftChannel.length));
 
         // create a new thread to not block the main UI thread
