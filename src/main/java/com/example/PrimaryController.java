@@ -62,10 +62,9 @@ public class PrimaryController {
                 System.out.println("Please input a stereo audio file");
                 return;
             }
-            System.out.println("val: " + (int) audioInputStream.getFrameLength() * bytesPerFrame);
-            System.out.println("val2: " + (int) bytesPerFrame);
+
             // read the audio data into a byte array
-            byte[] audioData = new byte[(int) audioInputStream.getFrameLength() * bytesPerFrame];
+            byte[] audioData = new byte[(int) (audioInputStream.getFrameLength() * bytesPerFrame)];
             audioInputStream.read(audioData);
 
             // extract left and right channels
@@ -73,11 +72,16 @@ public class PrimaryController {
             int[] rightChannel = new int[audioData.length / bytesPerFrame];
 
             for (int i = 0; i < audioData.length; i += bytesPerFrame) {
-                // shift the MSB left to merge it with the LSB
-                // while iterating over each byte in the sample
-                for (int j = 0; j < sampleSizeInBytes; j++) {
-                    leftChannel[i / bytesPerFrame] = (leftChannel[i / bytesPerFrame] | (audioData[i + j] << 8 * j));
-                    rightChannel[i / bytesPerFrame] = (rightChannel[i / bytesPerFrame] | (audioData[i + j + sampleSizeInBytes] << 8 * j));
+                if (sampleSizeInBytes == 1) { // special case when sample size is 8 bits
+                    // bitwise AND to set the bytes to an unsigned value, then recenter with "- 128"
+                    leftChannel[i / bytesPerFrame] = (audioData[i] & 0xFF) - 128;
+                    rightChannel[i / bytesPerFrame] = (audioData[i + 1] & 0xFF) - 128;
+                } else {
+                    // shift the MSB left to merge it with the LSB while iterating over each byte in the sample
+                    for (int j = 0; j < sampleSizeInBytes; j++) {
+                        leftChannel[i / bytesPerFrame] = (leftChannel[i / bytesPerFrame] | (audioData[i + j] << 8 * j));
+                        rightChannel[i / bytesPerFrame] = (rightChannel[i / bytesPerFrame] | (audioData[i + j + sampleSizeInBytes] << 8 * j));
+                    }
                 }
             }
 
